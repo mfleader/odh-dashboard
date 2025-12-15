@@ -21,6 +21,9 @@ import (
 	"github.com/rs/cors"
 )
 
+// RouterMiddleware is a type alias for httprouter middleware functions
+type RouterMiddleware func(httprouter.Handle) httprouter.Handle
+
 func (app *App) RecoverPanic(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
@@ -337,4 +340,17 @@ func (app *App) AttachMaaSClient(next func(http.ResponseWriter, *http.Request, h
 
 		next(w, r, ps)
 	}
+}
+
+// Chain composes multiple middleware functions around a handler, replacing deeply nested function calls
+// with a more readable linear syntax. Middleware is applied in reverse order to match nested call behavior.
+func (app *App) Chain(handler httprouter.Handle, middlewares ...RouterMiddleware) httprouter.Handle {
+	result := handler
+
+	// Reverse order matches nested call behavior: Chain(h, mw1, mw2, mw3) produces mw3(mw2(mw1(h)))
+	for i := len(middlewares) - 1; i >= 0; i-- {
+		result = middlewares[i](result)
+	}
+
+	return result
 }
