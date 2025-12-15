@@ -347,7 +347,7 @@ func (app *App) AttachMaaSClient(next func(http.ResponseWriter, *http.Request, h
 func (app *App) Chain(handler httprouter.Handle, middlewares ...RouterMiddleware) httprouter.Handle {
 	result := handler
 
-	// Reverse order matches nested call behavior: Chain(h, mw1, mw2, mw3) produces mw3(mw2(mw1(h)))
+	// Reverse order matches nested call behavior: Chain(h, mw1, mw2, mw3) produces mw1(mw2(mw3(h)))
 	for i := len(middlewares) - 1; i >= 0; i-- {
 		result = middlewares[i](result)
 	}

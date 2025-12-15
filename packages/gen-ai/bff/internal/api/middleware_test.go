@@ -385,3 +385,25 @@ func TestRequireAccessToService(t *testing.T) {
 		assert.True(t, handlerCalled, "Next handler should be called when user is authorized")
 	})
 }
+
+func TestChain(t *testing.T) {
+
+	t.Run("should return handler unchanged when no middleware provided", func(t *testing.T) {
+		app := App{}
+		handlerCalled := false
+		hanlderFn := func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+			handlerCalled = true
+			w.WriteHeader(http.StatusOK)
+		}
+		chained := app.Chain(hanlderFn)
+
+		req := httptest.NewRequest("GET", "/test", nil)
+		rr := httptest.NewRecorder()
+		chained(rr, req, nil)
+		assert.True(t, handlerCalled)
+		assert.Equal(t, http.StatusOK, rr.Code)
+	})
+
+	t.Run("should wrap handler with single middleware", func(t *testing.T) {
+	})
+}
